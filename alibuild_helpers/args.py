@@ -212,6 +212,8 @@ def doParseArgs():
   deps_graph = deps_parser.add_argument_group(title="Customise graph output")
   deps_graph.add_argument("--neat", dest="neat", action="store_true",
                           help="Produce a graph with transitive reduction.")
+  deps_graph.add_argument("--add-versions", dest="add_versions", action="store_true",
+                          help="Add package versions next to names in graph (versions taken from `version` entry)")
   deps_graph.add_argument("--outdot", dest="outdot", metavar="FILE",
                           help="Keep intermediate Graphviz dot file in %(metavar)s.")
   deps_graph.add_argument("--outgraph", dest="outgraph", metavar="FILE",

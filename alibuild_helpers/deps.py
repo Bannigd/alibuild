@@ -65,6 +65,11 @@ def doDeps(args, parser):
   dot += 'node [width=1.5, height=1, fonsize=46, margin=0.1];\n'
   dot += 'edge [penwidth=2];\n'
 
+  if args.add_versions:
+    node_template = lambda k, color, spec: f'"{k}" [shape=box, style="rounded,filled", fontname="helvetica", fillcolor={color}, label="\\N ({spec["version"]})"]\n'
+  else:
+    node_template = lambda k, color, spec: f'"{k}" [shape=box, style="rounded,filled", fontname="helvetica", fillcolor={color}]\n'
+
   for k,spec in specs.items():
     if k == "defaults-release":
       continue
@@ -83,7 +88,7 @@ def doDeps(args, parser):
       assert color, "This should not happen (happened for %s)" % k
 
     # Node definition
-    dot += f'"{k}" [shape=box, style="rounded,filled", fontname="helvetica", fillcolor={color}]\n'
+    dot += node_template(k, color, spec)
 
     # Connections (different whether it's a build dependency or a runtime one)
     for dep in spec["build_requires"]:
