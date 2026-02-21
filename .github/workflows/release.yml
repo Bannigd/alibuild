@@ -34,8 +34,6 @@ jobs:
     runs-on: macos-latest
     if: startsWith(github.ref, 'refs/tags/') && !github.event.release.prerelease
     steps:
-      - name: Install prerequisites
-        run: brew install pipgrip
       - name: Checkout Homebrew repo
         run: brew tap alisw/system-deps
       - name: Update alibuild formula with new version
@@ -49,6 +47,10 @@ jobs:
           json=$(curl -fSsL "https://pypi.org/pypi/alibuild/${version}/json")
           sha=$(echo "$json" | jq -r '.urls.[] | select(.filename | endswith(".tar.gz")) | .digests.sha256')
           url=$(echo "$json" | jq -r '.urls.[] | select(.filename | endswith(".tar.gz")) | .url')
+
+          # Remove PEP 668 EXTERNALLY-MANAGED marker so pip can run for dependency resolution
+          find /opt/homebrew/Cellar/python@3.14 -name 'EXTERNALLY-MANAGED' -delete 2>/dev/null || true
+
           brew bump-formula-pr --write-only alibuild --url "${url}" --sha256 "${sha}"
       - name: Push updated formula
         run: |
