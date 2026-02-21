@@ -9,8 +9,15 @@ from os import remove, path
 def doDeps(args, parser):
 
   # Check if we have an output file
-  if not args.outgraph:
-    parser.error("Specify a PDF output file with --outgraph")
+  if not args.outgraph and not args.outdot:
+    parser.error("Specify a PDF output file with --outgraph and/or a DOT output file with --outdot")
+
+  # Check if we have dot in PATH
+  if args.outgraph:
+    try:
+      execute(["dot", "-V"])
+    except Exception:
+      dieOnError(True, "Could not find dot in PATH. Please install graphviz and add it to PATH.")
 
   # Resolve all the package parsing boilerplate
   specs = {}
@@ -100,19 +107,16 @@ def doDeps(args, parser):
   fp.write(dot)
   fp.close()
 
-  # Check if we have dot in PATH
-  try:
-    execute(["dot", "-V"])
-  except Exception:
-    dieOnError(True, "Could not find dot in PATH. Please install graphviz and add it to PATH.")
-  try:
-    if args.neat:
-      execute("tred {dotFile} > {dotFile}.0 && mv {dotFile}.0 {dotFile}".format(dotFile=fp.name))
-    execute(["dot", fp.name, "-Tpdf", "-o", args.outgraph])
-  except Exception as e:
-    error("Error generating dependencies with dot: %s: %s", type(e).__name__, e)
-  else:
-    info("Dependencies graph generated: %s" % args.outgraph)
+  if args.outgraph:
+    try:
+      if args.neat:
+        execute("tred {dotFile} > {dotFile}.0 && mv {dotFile}.0 {dotFile}".format(dotFile=fp.name))
+      execute(["dot", fp.name, "-Tpdf", "-o", args.outgraph])
+    except Exception as e:
+      error("Error generating dependencies with dot: %s: %s", type(e).__name__, e)
+    else:
+      info("Dependencies graph generated: %s" % args.outgraph)
+
   if fp.name != args.outdot:
     remove(fp.name)
   else:
